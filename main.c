@@ -36,10 +36,10 @@ static int param_query(MYSQL *con) {
 
 	// parameter (1,'Audi',52642)
 	int id = 1, price = 52642;
-	char *str = "Audi";
+	char str[] = "Audi";
 	MYSQL_BIND param[3] = {
 		{.buffer_type = MYSQL_TYPE_LONG, .buffer = (void *) &id},
-		{.buffer_type = MYSQL_TYPE_STRING, .buffer = (void *) str, .buffer_length = sizeof(*str)},
+		{.buffer_type = MYSQL_TYPE_STRING, .buffer = (void *) str, .buffer_length = sizeof(str)},
 		{.buffer_type = MYSQL_TYPE_LONG, .buffer = (void *) &price}
 	};
 
