@@ -10,14 +10,14 @@
 #define MYSQL_DB "testdb"
 
 // query function
-static int query(MYSQL *con, char *query) {
+int query(MYSQL *con, char *query) {
 	if (mysql_query(con, query)) {
 		return 1;
 	}
 	return 0;
 }
 
-static int loop_query(MYSQL *con, char **q, int len) {
+int loop_query(MYSQL *con, char **q, int len) {
 	for (int i = 0; i < len; i++) {
 		if (query(con, q[i])) { return 1; }
 	}
@@ -25,7 +25,7 @@ static int loop_query(MYSQL *con, char **q, int len) {
 }
 
 // example of parameterized mysql query for user input of data.
-static int param_query(MYSQL *con, char *stmnt_str, int id, char *str, int price) {
+int param_query(MYSQL *con, char *stmnt_str, int id, char *str, int price) {
 	// alloc statement
 	MYSQL_STMT *stmnt = mysql_stmt_init(con);
 	if (!stmnt) { return 1; }
