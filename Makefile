@@ -1,4 +1,6 @@
 
+CFLAGS += -g
+
 # mysql compiler flags
 MYSQLCFLAGS = -I/usr/local/mysql/include
 MYSQLLNKFLAGS = -L/usr/local/mysql/lib -lmysqlclient -lz

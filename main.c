@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <mysql.h> // mysql
 
 #define MYSQL_HOST "localhost"
@@ -24,24 +25,18 @@ static int loop_query(MYSQL *con, char **q, int len) {
 }
 
 // example of parameterized mysql query for user input of data.
-static int param_query(MYSQL *con) {
+static int param_query(MYSQL *con, char *stmnt_str, int id, char *str, int price) {
 	// alloc statement
 	MYSQL_STMT *stmnt = mysql_stmt_init(con);
 	if (!stmnt) { return 1; }
 
 	// statement
-	char stmnt_str[] = "INSERT INTO Cars(Id, Name, Price) VALUES(?, ?, ?)";
-
-	if (mysql_stmt_prepare(stmnt, (char *) stmnt_str, sizeof(stmnt_str))) { return 2; }
-
-	// parameter (1,'Audi',52642)
-	int id = 1, price = 52642;
-	char str[] = "Audi";
+	if (mysql_stmt_prepare(stmnt, stmnt_str, strlen(stmnt_str))) { return 2; }
 
 	// all uninitialized portions of the struct are initialized to 0.
 	MYSQL_BIND param[3] = {
 		{.buffer_type = MYSQL_TYPE_LONG, .buffer = (void *) &id},
-		{.buffer_type = MYSQL_TYPE_STRING, .buffer = (void *) str, .buffer_length = sizeof(str)},
+	{.buffer_type = MYSQL_TYPE_STRING, .buffer = (void *) str, .buffer_length = strlen(str)},
 		{.buffer_type = MYSQL_TYPE_LONG, .buffer = (void *) &price}
 	};
 
@@ -80,9 +75,6 @@ int main() {
 	char *q[] = {
 		"DROP TABLE IF EXISTS Cars",
 		"CREATE TABLE Cars(Id INT, Name TEXT, Price INT)",
-		"INSERT INTO Cars VALUES(2,'Mercedes',57127)",
-		"INSERT INTO Cars VALUES(3,'Skoda',9000)",
-		"INSERT INTO Cars VALUES(4,'Volvo',29000)"
 	};
 
 	// loop through queries, fail if failure.
@@ -92,10 +84,23 @@ int main() {
 		return 3;
 	}
 
-	int ret;
-	if ((ret = param_query(con))) {
-		printf("param_query failed with value %d.\n", ret);
-		return ret + 3;
+	char *c_stmnt = "INSERT INTO Cars(Id, Name, Price) VALUES(?,?,?)";
+
+	// local struct declaration to simplify data listing.
+	struct car_stmnt {int id; char *str; int price;};
+	struct car_stmnt cars[] = {
+		{.id = 1, .str = "Audi", .price = 52642},
+		{.id = 2, .str = "Mercedes", .price = 57127},
+		{.id = 3, .str = "Skoda", .price = 9000},
+		{.id = 4, .str = "Volvo", .price = 29000}
+	};
+
+	for (int i = 0; i < (sizeof(cars) / sizeof(struct car_stmnt)); i++) {
+		int ret;
+		if ((ret = param_query(con, c_stmnt, cars[i].id, cars[i].str, cars[i].price))) {
+			printf("param_query failed with value %d.\n", ret);
+			return ret + 3;
+		}
 	}
 
 	mysql_close(con);
